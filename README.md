@@ -163,8 +163,6 @@ Add a `rarity` field to any item in `data/items.lua`:
     stack = false,
     rarity = 'rare',
 },
-
-},
 ```
 Add a `rarity` field to any item in `data/weapons.lua`:
 
@@ -180,13 +178,14 @@ Add a `rarity` field to any item in `data/weapons.lua`:
 
 ### Rarity tiers
 
-| Tier | Color | 
+| Tier | Color |
 |------|-------|
-| `common` | Green | 
-| `uncommon` | Lime | 
-| `rare` | Blue | 
+| `common` | Green |
+| `uncommon` | Lime |
+| `rare` | Blue |
 | `epic` | Purple |
-| `legendary` | Gold | 
+| `legendary` | Gold |
+| `mythic` | Red |
 
 Items without a `rarity` field have no rarity styling (default appearance). The rarity is also displayed in the item tooltip.
 

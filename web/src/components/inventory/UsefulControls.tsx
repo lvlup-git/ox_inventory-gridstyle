@@ -27,6 +27,7 @@ const CONTROL_SECTIONS = [
       { keys: 'CTRL + LMB', descKey: 'ui_ctrl_lmb', descFallback: 'Quick move stack' },
       { keys: 'CTRL + SHIFT + LMB', descKey: 'ui_ctrl_shift_lmb', descFallback: 'Quick move half stack' },
       { keys: 'SHIFT + Drag', descKey: 'ui_shift_drag', descFallback: 'Split quantity' },
+      { keys: 'Scroll + Drag', descKey: 'ui_scroll_drag', descFallback: 'Adjust split quantity' },
     ],
   },
   {

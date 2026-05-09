@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Inventory } from '../../typings';
-import WeightBar from '../utils/WeightBar';
 import InventorySlot from './InventorySlot';
 import { getTotalWeight } from '../../helpers';
 import { useAppSelector } from '../../store';
@@ -25,6 +24,11 @@ const InventoryGrid: React.FC<InventoryGridProps> = ({ inventory, onHeaderMouseD
   const containerRef = useRef(null);
   const { ref, entry } = useIntersection({ threshold: 0.5 });
   const isBusy = useAppSelector((state) => state.inventory.isBusy);
+  const weightKg = (weight / 1000).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const maxWeightKg = inventory.maxWeight
+    ? (inventory.maxWeight / 1000).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00';
+  const weightPercent = inventory.maxWeight ? (weight / inventory.maxWeight) * 100 : 0;
 
   useEffect(() => {
     if (entry && entry.isIntersecting) {
@@ -44,11 +48,17 @@ const InventoryGrid: React.FC<InventoryGridProps> = ({ inventory, onHeaderMouseD
             </div>
             {inventory.maxWeight !== undefined && inventory.maxWeight > 0 && (
               <div className="slot-header-right">
-                <span className="slot-header-weight">
-                  {(weight / 1000).toLocaleString('en-us', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                  <span className="slot-header-weight-separator">/</span>
-                  {(inventory.maxWeight / 1000).toLocaleString('en-us', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}kg
-                </span>
+                <div className="grid-header-weight-group">
+                  <span className="grid-header-weight">{weightKg}</span>
+                  <span className="grid-header-weight-separator">/</span>
+                  <span className="grid-header-weight">{maxWeightKg} Kg</span>
+                  <div className={`grid-header-weight-bar${weightPercent >= 90 ? ' grid-header-weight-bar--critical' : ''}`}>
+                    <div
+                      className="grid-header-weight-bar-fill"
+                      style={{ width: `${Math.min(weightPercent, 100)}%` }}
+                    />
+                  </div>
+                </div>
               </div>
             )}
             {onToggleLock && (
@@ -65,7 +75,6 @@ const InventoryGrid: React.FC<InventoryGridProps> = ({ inventory, onHeaderMouseD
               </button>
             )}
           </div>
-          <WeightBar percent={inventory.maxWeight ? (weight / inventory.maxWeight) * 100 : 0} />
         </div>
         <div className="slot-inventory-container" ref={containerRef}>
           <>

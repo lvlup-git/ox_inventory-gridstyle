@@ -428,8 +428,17 @@ const GridInventory: React.FC<GridInventoryProps> = ({ inventory, onHeaderMouseD
         }
       }
 
+      const maxSplit = sourceItem.count > 1 ? sourceItem.count : null;
+      const dragSplit =
+        maxSplit !== null && source.splitCount !== undefined
+          ? Math.min(source.splitCount, maxSplit)
+          : null;
+      const wheelSplit =
+        maxSplit !== null && reduxState.itemAmount > 0
+          ? Math.min(reduxState.itemAmount, maxSplit)
+          : null;
       const shiftHalf = reduxState.shiftPressed && sourceItem.count > 1 ? Math.floor(sourceItem.count / 2) : null;
-      const moveCount = source.splitCount ?? shiftHalf ?? sourceItem.count;
+      const moveCount = dragSplit ?? wheelSplit ?? shiftHalf ?? sourceItem.count;
       const isSplit = moveCount < sourceItem.count;
 
       const excludeSlot = isLocalMove && !isSplit ? source.item.slot : undefined;

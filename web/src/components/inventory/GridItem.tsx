@@ -3,9 +3,21 @@ import { useDrag } from 'react-dnd';
 import { DragSource, Inventory, InventoryType, SlotWithItem } from '../../typings';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { store } from '../../store';
-import { setDragRotated, gridMoveSlots, assignHotbar, clearHotbar, selectPlayerItemCounts, beginItemSearch, finishItemSearch, removePlayerItem } from '../../store/inventory';
+import {
+  setDragRotated,
+  gridMoveSlots,
+  gridStackSlots,
+  assignHotbar,
+  clearHotbar,
+  selectPlayerItemCounts,
+  beginItemSearch,
+  finishItemSearch,
+  removePlayerItem,
+  selectItemAmount,
+  setItemAmount,
+} from '../../store/inventory';
 import { Items } from '../../store/items';
-import { getItemUrl, isSlotWithItem, canPurchaseItem, canCraftItem } from '../../helpers';
+import { getItemUrl, isSlotWithItem, canPurchaseItem, canCraftItem, canStack } from '../../helpers';
 import { getEffectiveDimensions, buildOccupancyGrid, findFirstFit, getItemSize, getSlotEffectiveSize, getWeaponEffectiveSize, isGridInventory } from '../../helpers/gridUtils';
 import { closeTooltip, openTooltip } from '../../store/tooltip';
 import { openContextMenu, clearSplit } from '../../store/contextMenu';
@@ -37,6 +49,7 @@ const GridItem: React.FC<GridItemProps> = ({ item, inventoryType, inventoryId, i
     inventoryType === 'player' ? state.inventory.hotbar.indexOf(item.slot) : -1
   );
   const splitData = useAppSelector((state) => state.contextMenu);
+  const itemAmount = useAppSelector(selectItemAmount);
 
   const activeSplit =
     splitData.item?.slot === item.slot &&
@@ -142,6 +155,39 @@ const GridItem: React.FC<GridItemProps> = ({ item, inventoryType, inventoryId, i
     [item, inventoryType, inventoryId, inventoryGroups, baseWidth, baseHeight, activeSplit]
   );
 
+  useEffect(() => {
+    if (!isDragging || item.count <= 1 || inventoryType === 'shop' || inventoryType === 'crafting') return;
+    dispatch(setItemAmount(0));
+  }, [isDragging, item.count, inventoryType, dispatch]);
+
+  useEffect(() => {
+    if (!isDragging || item.count <= 1 || inventoryType === 'shop' || inventoryType === 'crafting') return;
+
+    const maxSplit = item.count;
+
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+
+      const scrollingUp = event.deltaY < 0;
+      const current = itemAmount > 0 ? Math.min(itemAmount, maxSplit) : maxSplit;
+      const next = scrollingUp
+        ? current >= maxSplit
+          ? 1
+          : current + 1
+        : current <= 1
+        ? maxSplit
+        : current - 1;
+      const normalizedNext = next === maxSplit ? 0 : next;
+
+      if (normalizedNext !== itemAmount) {
+        dispatch(setItemAmount(normalizedNext));
+      }
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => window.removeEventListener('wheel', onWheel);
+  }, [isDragging, item.count, inventoryType, itemAmount, dispatch]);
+
   const handleContext = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -199,43 +245,77 @@ const GridItem: React.FC<GridItemProps> = ({ item, inventoryType, inventoryId, i
         if (targetInv.type === 'container' && item.metadata?.isBackpack) return;
 
         if (isGridInventory(targetInv.type)) {
-          const itemSizes = getItemSizes();
-          const gw = targetInv.gridWidth ?? 10;
-          const gh = targetInv.gridHeight ?? 5;
-          const occupancy = buildOccupancyGrid(gw, gh, targetInv.items, itemSizes);
-          const size = getSlotEffectiveSize(item, itemSizes);
-          const fit = findFirstFit(occupancy, gw, gh, size.width, size.height);
-          if (!fit) return;
-
           const shiftHalf = event.shiftKey && item.count > 1 ? Math.floor(item.count / 2) : null;
           const moveCount = activeSplit ?? shiftHalf ?? item.count;
+          const itemData = Items[item.name];
+          const maxStack = itemData?.stackSize ?? item.stackSize;
+          const stackTarget = targetInv.items.find((targetSlot): targetSlot is SlotWithItem => {
+            if (!isSlotWithItem(targetSlot)) return false;
+            if (targetSlot.name !== item.name) return false;
+            if (!canStack(item, targetSlot)) return false;
+            return !maxStack || targetSlot.count < maxStack;
+          });
+
           const sourceInv = isLeft ? state.leftInventory : state.rightInventory;
           let maxSlot = 0;
           for (const i of sourceInv.items) if (i != null && typeof i.slot === 'number' && i.slot > maxSlot) maxSlot = i.slot;
           for (const i of targetInv.items) if (i != null && typeof i.slot === 'number' && i.slot > maxSlot) maxSlot = i.slot;
-          const uniqueToSlot = maxSlot + 1;
+
+          const toSlot = stackTarget?.slot ?? maxSlot + 1;
+          let toGridX = stackTarget?.gridX ?? 0;
+          let toGridY = stackTarget?.gridY ?? 0;
+          let rotated = stackTarget ? Boolean((stackTarget as any).gridRotated) : false;
+
+          if (!stackTarget) {
+            const itemSizes = getItemSizes();
+            const gw = targetInv.gridWidth ?? 10;
+            const gh = targetInv.gridHeight ?? 5;
+            const occupancy = buildOccupancyGrid(gw, gh, targetInv.items, itemSizes);
+            const size = getSlotEffectiveSize(item, itemSizes);
+            const fit = findFirstFit(occupancy, gw, gh, size.width, size.height);
+            if (!fit) return;
+            toGridX = fit.x;
+            toGridY = fit.y;
+            rotated = fit.rotated;
+          }
+
+          const stackCount = stackTarget && maxStack
+            ? Math.min(moveCount, Math.max(0, maxStack - (stackTarget.count ?? 0)))
+            : moveCount;
+
+          if (stackTarget && stackCount <= 0) return;
 
           dispatch(validateMove({
             fromSlot: item.slot,
             fromType: inventoryType,
-            toSlot: uniqueToSlot,
+            toSlot,
             toType: targetInv.type,
-            count: moveCount,
-            toGridX: fit.x,
-            toGridY: fit.y,
-            rotated: fit.rotated,
+            count: stackCount,
+            toGridX,
+            toGridY,
+            rotated,
           }) as any);
 
-          dispatch(gridMoveSlots({
-            fromSlot: item,
-            fromType: inventoryType,
-            toType: targetInv.type,
-            toSlotId: uniqueToSlot,
-            count: moveCount,
-            toGridX: fit.x,
-            toGridY: fit.y,
-            rotated: fit.rotated,
-          }));
+          if (stackTarget) {
+            dispatch(gridStackSlots({
+              fromSlot: item,
+              fromType: inventoryType,
+              toSlot: stackTarget,
+              toType: targetInv.type,
+              count: stackCount,
+            }));
+          } else {
+            dispatch(gridMoveSlots({
+              fromSlot: item,
+              fromType: inventoryType,
+              toType: targetInv.type,
+              toSlotId: toSlot,
+              count: stackCount,
+              toGridX,
+              toGridY,
+              rotated,
+            }));
+          }
 
           if (activeSplit) dispatch(clearSplit());
         } else {
@@ -366,13 +446,16 @@ const GridItem: React.FC<GridItemProps> = ({ item, inventoryType, inventoryId, i
                   }
                   return null;
                 })()}
-                <span className="grid-item-weight">
-                  {item.weight > 0
-                    ? item.weight >= 1000
-                      ? `${(item.weight / 1000).toLocaleString('en-us', { minimumFractionDigits: 1 })}kg`
-                      : `${item.weight.toLocaleString('en-us', { minimumFractionDigits: 0 })}g`
-                    : ''}
-                </span>
+                {item.weight > 0 && (
+                  <span className="grid-item-weight">
+                    {item.weight >= 1000
+                      ? `${(item.weight / 1000).toLocaleString('en-us', {
+                          minimumFractionDigits: 1,
+                          maximumFractionDigits: 1,
+                        })} kg`
+                      : `${item.weight.toLocaleString('en-us', { minimumFractionDigits: 0 })} g`}
+                  </span>
+                )}
               </div>
             </div>
           )}

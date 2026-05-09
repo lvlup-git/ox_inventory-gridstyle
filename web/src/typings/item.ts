@@ -17,5 +17,5 @@ export type ItemData = {
   type?: string;
   compatibleWeapons?: string[];
   sizeModifier?: [number, number];
-  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic';
 };

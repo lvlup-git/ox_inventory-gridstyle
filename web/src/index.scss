@@ -29,17 +29,19 @@ $accent-glow: rgba(212, 212, 212, 0.08);
 $success: #4ade80;
 $danger: #f87171;
 $warning: #fbbf24;
+$inventory-radius: 3px;
 
 $type-player: #8ab4f8;
 $type-stash: #a0a0a0;
 $type-shop: #4ade80;
 $type-crafting: #f0c24e;
 
-$rarity-common: #4ade80;
-$rarity-uncommon: #a3e635;
+$rarity-common: #9ca3af;
+$rarity-uncommon: #4ade80;
 $rarity-rare: #38bdf8;
 $rarity-epic: #c084fc;
-$rarity-legendary: #fbbf24;
+$rarity-legendary: #f59e0b;
+$rarity-mythic: #f43f5e;
 $type-trunk: #7a8590;
 $type-drop: #e08040;
 $type-glovebox: #8a959e;
@@ -219,7 +221,7 @@ input[type='number']::-webkit-outer-spin-button {
 
 @mixin ctx-rarity-bg($color) {
   .context-menu-list & {
-    
+
   }
 }
 
@@ -228,6 +230,7 @@ input[type='number']::-webkit-outer-spin-button {
 .ctx-menu-wrapper--rare { .ctx-preview-img-wrap { border-color: rgba($rarity-rare, 0.25); } }
 .ctx-menu-wrapper--epic { .ctx-preview-img-wrap { border-color: rgba($rarity-epic, 0.25); } }
 .ctx-menu-wrapper--legendary { .ctx-preview-img-wrap { border-color: rgba($rarity-legendary, 0.3); } }
+.ctx-menu-wrapper--mythic { .ctx-preview-img-wrap { border-color: rgba($rarity-mythic, 0.3); } }
 
 .ctx-rarity-bar {
   height: 2px;
@@ -240,6 +243,7 @@ input[type='number']::-webkit-outer-spin-button {
 .ctx-rarity-bar--rare { background: linear-gradient(90deg, rgba($rarity-rare, 0.7), rgba($rarity-rare, 0.15)); }
 .ctx-rarity-bar--epic { background: linear-gradient(90deg, rgba($rarity-epic, 0.7), rgba($rarity-epic, 0.15)); }
 .ctx-rarity-bar--legendary { background: linear-gradient(90deg, rgba($rarity-legendary, 0.8), rgba($rarity-legendary, 0.2)); }
+.ctx-rarity-bar--mythic { background: linear-gradient(90deg, rgba($rarity-mythic, 0.82), rgba($rarity-mythic, 0.2)); }
 
 @mixin ctx-rarity-badge($color) {
   color: $color;
@@ -267,6 +271,7 @@ input[type='number']::-webkit-outer-spin-button {
   &--rare { @include ctx-rarity-badge($rarity-rare); }
   &--epic { @include ctx-rarity-badge($rarity-epic); }
   &--legendary { @include ctx-rarity-badge($rarity-legendary); }
+  &--mythic { @include ctx-rarity-badge($rarity-mythic); }
 }
 
 .ctx-weight-badge {
@@ -310,6 +315,7 @@ input[type='number']::-webkit-outer-spin-button {
 .ctx-img--rare { border-color: rgba($rarity-rare, 0.25); }
 .ctx-img--epic { border-color: rgba($rarity-epic, 0.25); }
 .ctx-img--legendary { border-color: rgba($rarity-legendary, 0.3); }
+.ctx-img--mythic { border-color: rgba($rarity-mythic, 0.3); }
 
 .ctx-preview-img {
   width: 34px;
@@ -755,6 +761,7 @@ input[type='number']::-webkit-outer-spin-button {
 .tooltip-rarity-bar--rare { background: linear-gradient(90deg, rgba($rarity-rare, 0.7), rgba($rarity-rare, 0.15)); }
 .tooltip-rarity-bar--epic { background: linear-gradient(90deg, rgba($rarity-epic, 0.7), rgba($rarity-epic, 0.15)); }
 .tooltip-rarity-bar--legendary { background: linear-gradient(90deg, rgba($rarity-legendary, 0.8), rgba($rarity-legendary, 0.2)); }
+.tooltip-rarity-bar--mythic { background: linear-gradient(90deg, rgba($rarity-mythic, 0.82), rgba($rarity-mythic, 0.2)); }
 
 @mixin tooltip-rarity-bg($color) {
   border-color: rgba($color, 0.1);
@@ -766,6 +773,7 @@ input[type='number']::-webkit-outer-spin-button {
 .tooltip-wrapper--rare { @include tooltip-rarity-bg($rarity-rare); }
 .tooltip-wrapper--epic { @include tooltip-rarity-bg($rarity-epic); }
 .tooltip-wrapper--legendary { @include tooltip-rarity-bg($rarity-legendary); }
+.tooltip-wrapper--mythic { @include tooltip-rarity-bg($rarity-mythic); }
 
 .tooltip-header-wrapper {
   display: flex;
@@ -803,6 +811,7 @@ input[type='number']::-webkit-outer-spin-button {
 .tooltip-img--rare { border-color: rgba($rarity-rare, 0.25); }
 .tooltip-img--epic { border-color: rgba($rarity-epic, 0.25); }
 .tooltip-img--legendary { border-color: rgba($rarity-legendary, 0.3); }
+.tooltip-img--mythic { border-color: rgba($rarity-mythic, 0.3); }
 
 .tooltip-item-image {
   width: 32px;
@@ -872,6 +881,7 @@ input[type='number']::-webkit-outer-spin-button {
   &--rare { @include rarity-badge($rarity-rare); }
   &--epic { @include rarity-badge($rarity-epic); }
   &--legendary { @include rarity-badge($rarity-legendary); }
+  &--mythic { @include rarity-badge($rarity-mythic); }
 }
 
 .tooltip-weight-badge {
@@ -1743,7 +1753,7 @@ button:active {
   align-items: center;
   padding: 10px 14px;
   background: $bg-panel;
-  border-radius: 10px 10px 0 0;
+  border-radius: $inventory-radius $inventory-radius 0 0;
   border: 1px solid $border-subtle;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   position: relative;
@@ -1794,17 +1804,23 @@ button:active {
   .slot-header-weight {
     font-size: 10px;
     font-family: $mainFont;
-    font-weight: 500;
-    color: $text-muted;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
     letter-spacing: 0.2px;
     font-variant-numeric: tabular-nums;
+    padding: 3px 7px;
+    border-radius: $inventory-radius;
+    background: rgba(0, 0, 0, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   }
 
   .slot-header-weight-separator {
-    color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
     font-size: 9px;
     margin: 0 2px;
-    font-weight: 300;
+    font-weight: 500;
   }
 }
 
@@ -1814,7 +1830,7 @@ button:active {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: $inventory-radius;
   background: rgba(255, 255, 255, 0.04);
   flex-shrink: 0;
   transition: background 0.2s ease, box-shadow 0.2s ease;
@@ -1829,7 +1845,7 @@ button:active {
   overflow-x: hidden;
   max-height: 45vh;
   background: $bg-deep;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 $inventory-radius $inventory-radius;
   border: 1px solid $border-subtle;
   border-top: none;
   padding: 4px;
@@ -1848,7 +1864,7 @@ button:active {
   background-color: $bg-card;
   background-repeat: no-repeat;
   background-position: center;
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   image-rendering: -webkit-optimize-contrast;
   position: relative;
   background-size: 7vh;
@@ -1867,8 +1883,8 @@ button:active {
   background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
   color: $text-secondary;
   text-align: center;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: $inventory-radius;
+  border-bottom-right-radius: $inventory-radius;
 }
 
 .inventory-slot-label-text {
@@ -1887,7 +1903,7 @@ button:active {
   background: rgba(0, 0, 0, 0.5);
   color: $text-primary;
   height: auto;
-  border-radius: 4px;
+  border-radius: $inventory-radius;
   padding: 1px 5px;
   font-size: 9px;
   font-weight: 700;
@@ -1926,7 +1942,18 @@ button:active {
   gap: 3px;
 
   p {
-    font-size: 12px;
+    font-size: 9px;
+    font-family: $mainFont;
+    font-weight: 700;
+    color: $text-primary;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: $inventory-radius;
+    padding: 1px 5px;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
   }
 }
 
@@ -1971,7 +1998,7 @@ button:active {
   flex-direction: column;
   align-items: center;
   background: rgba($bg-panel, 0.94);
-  border-radius: 6px;
+  border-radius: $inventory-radius;
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   padding: 5px;
@@ -1997,7 +2024,7 @@ button:active {
 .hotbar-slot {
   width: 8.5vh;
   height: 8.5vh;
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -2027,7 +2054,7 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   z-index: 5;
   line-height: 1;
   letter-spacing: 0;
@@ -2084,7 +2111,7 @@ button:active {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   background: rgba(0, 0, 0, 0.5);
   padding: 0px 3px;
-  border-radius: 2px;
+  border-radius: $inventory-radius;
   line-height: 1.4;
   letter-spacing: 0.2px;
 }
@@ -2145,7 +2172,7 @@ button:active {
   gap: 10px;
   background: rgba($bg-panel, 0.94);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  border-radius: $inventory-radius;
   padding: 8px 14px 8px 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
   min-width: 180px;
@@ -2162,7 +2189,7 @@ button:active {
   background-size: contain;
   image-rendering: -webkit-optimize-contrast;
   background-color: rgba(255, 255, 255, 0.03);
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   border: 1px solid rgba(255, 255, 255, 0.04);
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
@@ -2206,7 +2233,7 @@ button:active {
   background: rgba(255, 255, 255, 0.04);
   border: none;
   height: 3px;
-  border-radius: 2px;
+  border-radius: $inventory-radius;
   overflow: hidden;
 }
 
@@ -2277,7 +2304,7 @@ button:active {
   align-items: center;
   padding: 10px 14px;
   background: $bg-panel;
-  border-radius: 10px 10px 0 0;
+  border-radius: $inventory-radius $inventory-radius 0 0;
   border: 1px solid $border-subtle;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   position: relative;
@@ -2502,21 +2529,27 @@ $inv-types: (
   flex-shrink: 1;
   min-width: 0;
   overflow: hidden;
+  padding: 3px 7px;
+  border-radius: $inventory-radius;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .grid-header-weight {
   font-size: 10px;
   font-family: $mainFont;
-  font-weight: 500;
-  color: $text-muted;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
   letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .grid-header-weight-separator {
-  color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
   font-size: 9px;
-  font-weight: 300;
+  font-weight: 500;
 }
 
 .grid-header-weight-bar {
@@ -2559,7 +2592,7 @@ $inv-types: (
   position: relative;
   max-height: 50vh;
   background: $bg-deep;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 $inventory-radius $inventory-radius;
   border: 1px solid $border-subtle;
   border-top: 0;
   padding: 4px;
@@ -2569,7 +2602,7 @@ $inv-types: (
 .grid-cell {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   aspect-ratio: 1;
   position: relative;
 
@@ -2580,7 +2613,7 @@ $inv-types: (
 .grid-ghost-cell {
   pointer-events: none;
   z-index: 10;
-  border-radius: 4px;
+  border-radius: $inventory-radius;
   animation: ghostPulse 1.4s ease-in-out infinite;
 
   &.ghost-valid {
@@ -2628,7 +2661,7 @@ $inv-types: (
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.45);
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 $inventory-radius $inventory-radius;
   opacity: 0;
   animation: fadeIn 0.15s ease 0.3s forwards;
 }
@@ -2776,6 +2809,7 @@ $inv-types: (
 .grid-item--rarity-rare { @include rarity-tier($rarity-rare); }
 .grid-item--rarity-epic { @include rarity-tier($rarity-epic); }
 .grid-item--rarity-legendary { @include rarity-tier($rarity-legendary); }
+.grid-item--rarity-mythic { @include rarity-tier($rarity-mythic); }
 
 .grid-item-image {
   position: absolute;
@@ -2814,17 +2848,22 @@ $inv-types: (
 }
 
 .grid-item-weight {
-  font-size: 6.5px;
+  font-size: 7.25px;
   font-family: $mainFont;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.18);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   font-variant-numeric: tabular-nums;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: $inventory-radius;
+  padding: 1px 4px;
+  line-height: 1.2;
   transition: color 0.15s ease;
 
   .grid-item:hover & {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.95);
   }
 }
 
@@ -2836,7 +2875,7 @@ $inv-types: (
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   background: rgba(0, 0, 0, 0.5);
   padding: 1px 5px;
-  border-radius: 2px;
+  border-radius: $inventory-radius;
   line-height: 1.4;
   letter-spacing: 0.3px;
   font-variant-numeric: tabular-nums;
@@ -2898,7 +2937,7 @@ $inv-types: (
   align-items: center;
   justify-content: center;
   padding: 0 3px;
-  border-radius: 3px;
+  border-radius: $inventory-radius;
   z-index: 5;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -3600,6 +3639,26 @@ $inv-types: (
   image-rendering: -webkit-optimize-contrast;
   transition: transform 0.12s ease;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.grid-drag-preview-amount {
+  position: absolute;
+  right: -6px;
+  bottom: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $mainFont;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(20, 22, 32, 0.92);
+  border: 1px solid rgba($accent, 0.45);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
 }
 
 .dev-toolbar {
