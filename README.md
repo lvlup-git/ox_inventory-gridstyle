@@ -180,10 +180,10 @@ Add a `rarity` field to any item in `data/weapons.lua`:
 
 | Tier | Color |
 |------|-------|
-| `common` | Green |
-| `uncommon` | Lime |
-| `rare` | Blue |
-| `epic` | Purple |
+| `common` | Gray |
+| `uncommon` | Green |
+| `rare` | Cyan (Blue) |
+| `epic` | Light Purple |
 | `legendary` | Gold |
 | `mythic` | Red |
 
